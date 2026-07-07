@@ -57,9 +57,10 @@ heurísticas de palavra-chave sobre fala espontânea.
 
 ## Fase 2 — Robustez do produto
 
-- [~] Substituir o PDF artesanal por biblioteca real (reportlab):
+- [x] Substituir o PDF artesanal por biblioteca real (reportlab):
       título, data, projeto, status, regras com IDs, seções, branding Rulees
-      (doc §22). Em execução.
+      (doc §22). Paginação real (corrige truncamento silencioso em 38 linhas),
+      escape XML de conteúdo de regra/transcrição. 4 testes novos.
 - [x] ~~Worker assíncrono (Arq + Redis)~~ — **avaliado e adiado deliberadamente**
       pelo arquiteto (Plan agent, 2026-07-07). Nenhum job atual é pesado o
       suficiente para justificar fila: PDF/Excel são só manipulação de
@@ -72,10 +73,11 @@ heurísticas de palavra-chave sobre fala espontânea.
       segundos para minutos em teste real; ou (b) quando `create_export_job`
       (jira/confluence) passar a fazer chamada HTTP real para API externa —
       aí sim retry/fila viram a ferramenta certa.
-- [~] Feature flags para desligar IA, RAG, geração de documento e exportação
-      (exigência de rollback, doc §43). Em execução (`ai_enabled`,
-      `rag_enabled`, `document_generation_enabled`, `export_enabled` já em
-      `backend/app/core/settings.py`).
+- [x] Feature flags para desligar IA, RAG, geração de documento e exportação
+      (exigência de rollback, doc §43). `ai_enabled`/`rag_enabled`/
+      `document_generation_enabled`/`export_enabled` em
+      `backend/app/core/settings.py`, com gate nos 3 endpoints de export
+      (incluindo `signed_export_url`, que tinha ficado sem o gate).
 - [ ] Refatorar frontend: quebrar `App.tsx` em `features/` por domínio com
       router; manter identidade visual (skill `rulees-frontend`).
 - [ ] PWA mínimo: manifest, service worker, ícones — a arquitetura de frontend
@@ -88,20 +90,25 @@ heurísticas de palavra-chave sobre fala espontânea.
 
 ## Achados de revisão de arquitetura (2026-07-07, não previstos no levantamento inicial)
 
-- [~] Chamada síncrona bloqueante no event loop do WebSocket: `check_rule_conflicts`/
+- [x] Chamada síncrona bloqueante no event loop do WebSocket: `check_rule_conflicts`/
       `upsert_embedding` em `realtime/websocket.py` fazem HTTP síncrono via
       `embed_with_fallback` quando `embedding_provider` é openai/ollama, travando
-      conexões concorrentes. Corrigir com `asyncio.to_thread` (mesmo padrão do
-      `llm_classifier.py`). Em execução.
-- [~] Handler do WebSocket só captura `WebSocketDisconnect` — qualquer outra
-      exceção derruba a conexão sem emitir `error.validation`, violando o
-      contrato da skill `rulees-realtime-events`. Em execução.
-- [~] Reunião fica presa para sempre em `MeetingStatus.processing` — nunca
-      transiciona para `processing_completed`/`finished` após `meeting.stop`
-      nem após `finish_meeting`. Em execução.
-- [ ] `signed_export_url` (`documents/router.py`) gera PDF/Excel sem checar
-      `export_enabled` — kill switch furado por essa rota. Em execução junto
-      com os gates de feature flag.
+      conexões concorrentes. Corrigido com `asyncio.to_thread` (mesmo padrão do
+      `llm_classifier.py`).
+- [x] Handler do WebSocket só capturava `WebSocketDisconnect` — qualquer outra
+      exceção derrubava a conexão sem emitir `error.validation`. Corrigido:
+      `except Exception` faz rollback + emite `error.validation` + continua o loop.
+- [x] Reunião ficava presa para sempre em `MeetingStatus.processing`. Confirmado
+      contra `documentos/Fluxo Completo da Reunião.docx` que a transição correta
+      é `processing → processing_completed`; `complete_meeting_processing()` em
+      `meetings/lifecycle.py` chamada em `meetings/router.py::finish` e no
+      handler `meeting.stop` do WebSocket.
+- [x] `signed_export_url` (`documents/router.py`) gerava PDF/Excel sem checar
+      `export_enabled` — kill switch furado por essa rota. Corrigido junto com
+      os outros 2 gates de export.
+
+Suite completa: **40/40 testes passando** em `main` (23 originais + 9 do
+classificador LLM + 4 do PDF + 3 de export flags + 1 de meeting-stop).
 
 ## Fase 3 — Operação e infraestrutura
 
