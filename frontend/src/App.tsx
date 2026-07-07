@@ -2754,7 +2754,7 @@ function App() {
 
         {activeView === 'documents' && (
           <section className="documents-grid">
-            <div className="panel operational-panel documents-panel">
+            <div className="panel documents-list-panel">
               <div className="panel-title">
                 <FileText size={18} />
                 <h2>Documentos</h2>

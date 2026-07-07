@@ -244,6 +244,7 @@ nav a.active,
 }
 
 .workspace {
+  align-content: start;
   display: grid;
   gap: 16px;
   padding: 20px;
@@ -326,6 +327,12 @@ h2 {
 .documents-grid {
   display: grid;
   gap: 16px;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.documents-list-panel {
+  align-content: start;
+  min-height: 220px;
 }
 
 .p1-grid {
@@ -341,7 +348,7 @@ h2 {
 
 .operational-grid {
   display: grid;
-  align-items: start;
+  align-items: stretch;
   gap: 18px;
   grid-template-areas:
     "access access usage plan"
@@ -365,10 +372,6 @@ h2 {
 
 .plan-panel {
   grid-area: plan;
-}
-
-.documents-panel {
-  grid-area: documents;
 }
 
 .audit-panel {
@@ -399,7 +402,6 @@ h2 {
   grid-area: notifications;
 }
 
-.documents-panel,
 .agents-panel,
 .rag-panel,
 .feedback-panel,
