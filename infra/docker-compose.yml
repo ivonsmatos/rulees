@@ -1,0 +1,19 @@
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_DB: rulees
+      POSTGRES_USER: rulees
+      POSTGRES_PASSWORD: rulees
+    ports:
+      - "55432:5432"
+    volumes:
+      - rulees_postgres:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+volumes:
+  rulees_postgres:

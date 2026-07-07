@@ -1,0 +1,1225 @@
+:root {
+  --brand-deep: #375d61;
+  --brand-soft: #c8e3e6;
+  --brand-bright: #80d7e0;
+  --brand-muted: #546061;
+  --brand-mid: #61a4ab;
+  --surface: #ffffff;
+  --ink: #000000;
+  --line: #c8e3e6;
+  --page: #c8e3e6;
+  --shadow: 0 18px 50px rgba(0, 0, 0, 0.08);
+}
+
+.auth-shell {
+  align-items: center;
+  background: var(--brand-deep);
+  display: flex;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 24px;
+}
+
+.auth-panel {
+  background: var(--surface);
+  border: 1px solid var(--brand-soft);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  display: grid;
+  gap: 18px;
+  max-width: 440px;
+  padding: 28px;
+  width: 100%;
+}
+
+.auth-logo {
+  display: block;
+  height: auto;
+  max-width: 180px;
+  width: 48%;
+}
+
+.auth-tabs,
+.action-row,
+.rule-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.action-row {
+  flex-wrap: wrap;
+}
+
+.auth-tabs button,
+.ghost-action,
+.secondary-action,
+.primary-action,
+.danger-action,
+.inline-form button,
+.rule-actions button,
+.demo-sender button {
+  align-items: center;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  display: inline-flex;
+  font: inherit;
+  gap: 8px;
+  justify-content: center;
+  min-height: 40px;
+  padding: 8px 12px;
+}
+
+.auth-tabs button {
+  background: var(--brand-soft);
+  color: var(--brand-deep);
+  flex: 1;
+}
+
+.auth-tabs button.active,
+.primary-action {
+  background: var(--brand-deep);
+  color: var(--surface);
+}
+
+.secondary-action {
+  background: var(--brand-soft);
+  color: var(--brand-deep);
+}
+
+.danger-action {
+  background: var(--brand-muted);
+  color: var(--surface);
+}
+
+.ghost-action {
+  background: transparent;
+  border-color: var(--brand-soft);
+  color: var(--brand-deep);
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.48;
+}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--brand-bright);
+  outline-offset: 2px;
+}
+
+.form-stack,
+.inline-form {
+  display: grid;
+  gap: 10px;
+}
+
+label {
+  color: var(--brand-muted);
+  display: grid;
+  font-size: 13px;
+  font-weight: 700;
+  gap: 6px;
+}
+
+input,
+select,
+textarea {
+  background: var(--surface);
+  border: 1px solid var(--brand-soft);
+  border-radius: 6px;
+  color: var(--ink);
+  font: inherit;
+  min-width: 0;
+  padding: 10px 12px;
+}
+
+select {
+  cursor: pointer;
+}
+
+textarea {
+  min-height: 92px;
+  resize: vertical;
+}
+
+.inline-message,
+.notice {
+  align-items: center;
+  background: var(--brand-soft);
+  border: 1px solid var(--brand-mid);
+  border-radius: 6px;
+  color: var(--brand-deep);
+  display: flex;
+  gap: 8px;
+  padding: 10px 12px;
+}
+
+.app-shell {
+  background: var(--page);
+  color: var(--ink);
+  display: grid;
+  grid-template-columns: 248px minmax(0, 1fr);
+  min-height: 100vh;
+}
+
+.sidebar {
+  background: var(--surface);
+  border-right: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 20px;
+}
+
+.brand-row {
+  display: grid;
+  gap: 10px;
+}
+
+.sidebar-logo {
+  display: block;
+  height: auto;
+  max-width: 164px;
+  width: 100%;
+}
+
+.tenant-switcher {
+  background: var(--brand-soft);
+  border-color: var(--brand-soft);
+  color: var(--brand-deep);
+  font-size: 13px;
+  font-weight: 700;
+  width: 100%;
+}
+
+.topbar div:first-child {
+  display: grid;
+  gap: 2px;
+}
+
+.brand-row span,
+.topbar span,
+.list-item span,
+.rule-card small {
+  color: var(--brand-muted);
+  font-size: 13px;
+}
+
+nav {
+  display: grid;
+  gap: 6px;
+}
+
+nav a,
+.nav-link {
+  align-items: center;
+  background: none;
+  border: none;
+  border-radius: 6px;
+  color: var(--brand-muted);
+  cursor: pointer;
+  display: flex;
+  font: inherit;
+  gap: 10px;
+  padding: 10px;
+  text-align: left;
+  width: 100%;
+}
+
+.nav-link:hover {
+  background: var(--brand-soft);
+  color: var(--brand-deep);
+}
+
+nav a.active,
+.nav-link.active {
+  background: var(--brand-soft);
+  color: var(--brand-deep);
+  font-weight: 800;
+}
+
+.workspace {
+  display: grid;
+  gap: 16px;
+  padding: 20px;
+}
+
+.topbar {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+}
+
+h1,
+h2,
+p {
+  margin: 0;
+}
+
+h1 {
+  color: var(--brand-deep);
+  font-size: 28px;
+  line-height: 1.2;
+}
+
+h2 {
+  color: var(--brand-deep);
+  font-size: 16px;
+}
+
+.connection {
+  align-items: center;
+  border-radius: 999px;
+  display: inline-flex;
+  font-size: 13px;
+  gap: 8px;
+  padding: 8px 12px;
+}
+
+.connection.offline {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  color: var(--brand-muted);
+}
+
+.connection.connecting {
+  background: var(--brand-soft);
+  color: var(--brand-deep);
+}
+
+.connection.online {
+  background: var(--brand-bright);
+  color: var(--ink);
+}
+
+.grid {
+  display: grid;
+  gap: 16px;
+}
+
+.two-columns,
+.meeting-console {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+
+.meeting-console.solo {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.insights-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+
+.rules-extra-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+
+.documents-grid {
+  display: grid;
+  gap: 16px;
+}
+
+.p1-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+}
+
+.p1-panel {
+  align-content: start;
+  min-height: 170px;
+}
+
+.operational-grid {
+  display: grid;
+  align-items: start;
+  gap: 18px;
+  grid-template-areas:
+    "access access usage plan"
+    "audit audit feedback feedback"
+    "global analytics notifications notifications";
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.operational-panel {
+  align-content: start;
+  min-height: 220px;
+}
+
+.access-panel {
+  grid-area: access;
+}
+
+.usage-panel {
+  grid-area: usage;
+}
+
+.plan-panel {
+  grid-area: plan;
+}
+
+.documents-panel {
+  grid-area: documents;
+}
+
+.audit-panel {
+  grid-area: audit;
+}
+
+.agents-panel {
+  grid-area: agents;
+}
+
+.rag-panel {
+  grid-area: rag;
+}
+
+.feedback-panel {
+  grid-area: feedback;
+}
+
+.global-search-panel {
+  grid-area: global;
+}
+
+.analytics-panel {
+  grid-area: analytics;
+}
+
+.notifications-panel {
+  grid-area: notifications;
+}
+
+.documents-panel,
+.agents-panel,
+.rag-panel,
+.feedback-panel,
+.global-search-panel,
+.analytics-panel,
+.notifications-panel {
+  min-height: 220px;
+}
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+}
+
+.panel-title {
+  align-items: center;
+  color: var(--brand-mid);
+  display: flex;
+  gap: 8px;
+}
+
+.panel-title h2 {
+  flex: 1;
+}
+
+.project-detail {
+  align-content: start;
+}
+
+.detail-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.detail-tabs button {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  color: var(--brand-muted);
+  cursor: pointer;
+  font: inherit;
+  min-height: 38px;
+  padding: 8px 12px;
+}
+
+.detail-tabs button.active {
+  background: var(--brand-soft);
+  color: var(--brand-deep);
+  font-weight: 800;
+}
+
+.project-detail-body {
+  display: grid;
+  gap: 12px;
+}
+
+.project-edit-form,
+.template-use-form {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 44px 44px;
+}
+
+.glossary-form {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.3fr) minmax(0, 1fr) 44px;
+}
+
+.template-form {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) 44px;
+}
+
+.template-meeting-form {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 44px;
+}
+
+.template-form input:nth-child(5),
+.template-form input:nth-child(6) {
+  grid-column: span 1;
+}
+
+.project-edit-form button,
+.glossary-form button,
+.template-form button,
+.template-meeting-form button,
+.template-use-form button {
+  align-items: center;
+  background: var(--brand-soft);
+  border: 1px solid transparent;
+  border-radius: 6px;
+  color: var(--brand-deep);
+  cursor: pointer;
+  display: inline-flex;
+  justify-content: center;
+  min-height: 40px;
+  padding: 0;
+}
+
+.project-edit-form .danger-action {
+  background: var(--brand-muted);
+  color: var(--surface);
+}
+
+.detail-summary {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  display: grid;
+  gap: 4px;
+  padding: 12px;
+}
+
+.detail-summary span {
+  color: var(--brand-muted);
+  font-size: 13px;
+}
+
+.detail-metrics {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.detail-metrics div {
+  background: var(--brand-soft);
+  border-radius: 6px;
+  display: grid;
+  gap: 4px;
+  padding: 10px;
+}
+
+.detail-metrics span {
+  color: var(--brand-muted);
+  font-size: 12px;
+}
+
+.inline-form {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 44px;
+}
+
+.inline-form button,
+.rule-actions button {
+  background: var(--brand-soft);
+  color: var(--brand-deep);
+  padding: 0;
+}
+
+.list,
+.rule-list,
+.transcript-feed,
+.insight-list,
+.metric-list,
+.document-list,
+.audit-list,
+.agent-list,
+.rag-list,
+.billing-list,
+.member-list,
+.invite-list,
+.project-member-list,
+.glossary-list,
+.template-list {
+  display: grid;
+  gap: 8px;
+  max-height: 340px;
+  overflow: auto;
+}
+
+.list-item {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  color: var(--ink);
+  display: grid;
+  gap: 4px;
+  padding: 10px;
+  text-align: left;
+}
+
+.list-item.selected {
+  border-color: var(--brand-mid);
+  box-shadow: inset 3px 0 0 var(--brand-mid);
+}
+
+.meeting-console {
+  display: grid;
+  gap: 16px;
+}
+
+.live-panel {
+  align-content: start;
+}
+
+.demo-sender {
+  display: grid;
+  gap: 10px;
+}
+
+.audio-controls {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.meeting-meta-grid {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+
+.meeting-meta-panel {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  display: grid;
+  gap: 8px;
+  padding: 10px;
+}
+
+.participant-form {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: minmax(0, 1fr) minmax(110px, 140px) auto 40px;
+}
+
+.feedback-form {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: 80px minmax(0, 1fr);
+}
+
+.feedback-form textarea,
+.feedback-form button {
+  grid-column: 1 / -1;
+}
+
+.participant-form button {
+  align-items: center;
+  background: var(--brand-soft);
+  border: 1px solid transparent;
+  border-radius: 6px;
+  color: var(--brand-deep);
+  cursor: pointer;
+  display: inline-flex;
+  justify-content: center;
+}
+
+.checkbox-line {
+  align-items: center;
+  display: flex;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.checkbox-line input {
+  min-width: auto;
+}
+
+.compact-list {
+  display: grid;
+  gap: 6px;
+  max-height: 160px;
+  overflow: auto;
+}
+
+.compact-row {
+  align-items: center;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  display: grid;
+  gap: 8px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  padding: 8px;
+}
+
+.compact-row span,
+.compact-row strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.global-search-panel .compact-row {
+  grid-template-columns: 1fr;
+}
+
+.global-search-panel .compact-row strong {
+  color: var(--brand-muted);
+  font-size: 13px;
+  white-space: normal;
+}
+
+.checklist {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.check-item {
+  align-items: center;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--brand-muted);
+  display: inline-flex;
+  font-size: 13px;
+  font-weight: 800;
+  gap: 6px;
+  padding: 6px 10px;
+}
+
+.check-item.done {
+  background: var(--brand-soft);
+  border-color: var(--brand-mid);
+  color: var(--brand-deep);
+}
+
+.summary-box {
+  display: grid;
+  gap: 8px;
+}
+
+.summary-box p {
+  color: var(--brand-muted);
+}
+
+.summary-box span {
+  background: var(--brand-soft);
+  border-radius: 6px;
+  color: var(--brand-deep);
+  font-size: 13px;
+  padding: 8px;
+}
+
+.demo-sender button {
+  background: var(--brand-deep);
+  color: var(--surface);
+}
+
+.audio-controls button {
+  min-width: 112px;
+}
+
+.audio-meta {
+  color: var(--brand-muted);
+  font-size: 13px;
+}
+
+.consent-meta {
+  color: var(--brand-muted);
+  font-size: 13px;
+}
+
+.status-pill.recording {
+  background: var(--brand-bright);
+  color: var(--ink);
+}
+
+.status-pill.requesting,
+.status-pill.idle,
+.status-pill.partial {
+  background: var(--brand-soft);
+  color: var(--brand-deep);
+}
+
+.status-pill.error {
+  background: var(--brand-muted);
+  color: var(--surface);
+}
+
+.transcript-row {
+  background: var(--page);
+  border-left: 3px solid var(--brand-mid);
+  border-radius: 6px;
+  display: grid;
+  gap: 6px;
+  padding: 10px;
+}
+
+.transcript-row.partial {
+  border-left-color: var(--brand-muted);
+  opacity: 0.86;
+}
+
+.transcript-row div {
+  align-items: center;
+  display: grid;
+  gap: 8px;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+}
+
+.transcript-row span {
+  color: var(--brand-muted);
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rule-card {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+}
+
+.rule-card div:first-child {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+}
+
+.insight-row {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+}
+
+.insight-row div:first-child {
+  align-items: start;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+}
+
+.insight-row p {
+  color: var(--brand-muted);
+}
+
+.insight-row small {
+  color: var(--brand-muted);
+  font-size: 13px;
+}
+
+.metric-row,
+.document-row,
+.audit-row,
+.agent-row,
+.rag-row,
+.billing-row,
+.member-row,
+.invite-row,
+.project-member-row,
+.glossary-row,
+.template-row {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  color: var(--ink);
+  display: grid;
+  gap: 4px;
+  padding: 10px;
+  text-align: left;
+}
+
+.metric-row,
+.member-row,
+.invite-row,
+.project-member-row {
+  align-items: center;
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.glossary-row,
+.template-row {
+  gap: 6px;
+}
+
+.metric-row span,
+.document-row span,
+.audit-row span,
+.agent-row span,
+.agent-row small,
+.rag-row span,
+.rag-row p,
+.billing-row span,
+.member-row span,
+.invite-row span,
+.project-member-row span,
+.glossary-row span,
+.glossary-row p,
+.template-row span,
+.template-row p,
+.empty-state {
+  color: var(--brand-muted);
+  font-size: 13px;
+}
+
+.billing-row {
+  align-items: center;
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.cost-row {
+  background: var(--brand-soft);
+}
+
+.metric-row span,
+.billing-row span,
+.audit-row span,
+.agent-row span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rag-form,
+.audit-filter {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: minmax(0, 1fr) 44px;
+}
+
+.access-form {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: minmax(180px, 1fr) minmax(120px, 150px) 44px;
+}
+
+.rag-form button,
+.audit-filter button,
+.access-form button,
+.compact-icon-button {
+  align-items: center;
+  background: var(--brand-soft);
+  border: 1px solid transparent;
+  border-radius: 6px;
+  color: var(--brand-deep);
+  cursor: pointer;
+  display: inline-flex;
+  justify-content: center;
+}
+
+.access-form button,
+.compact-icon-button {
+  min-height: 40px;
+  padding: 0;
+}
+
+.document-row {
+  cursor: pointer;
+  font: inherit;
+}
+
+.document-row:hover,
+.list-item:hover,
+.rule-actions button:hover {
+  border-color: var(--brand-mid);
+}
+
+.revision-box {
+  display: grid;
+  gap: 8px;
+}
+
+.revision-box textarea {
+  min-height: 88px;
+}
+
+.revision-box button {
+  align-items: center;
+  background: var(--brand-soft);
+  border: 1px solid transparent;
+  border-radius: 6px;
+  color: var(--brand-deep);
+  cursor: pointer;
+  display: inline-flex;
+  font: inherit;
+  gap: 8px;
+  justify-content: center;
+  min-height: 40px;
+  padding: 8px 12px;
+}
+
+.status-pill {
+  border-radius: 999px;
+  display: inline-flex;
+  font-size: 12px;
+  font-weight: 800;
+  padding: 4px 8px;
+}
+
+.status-pill.active,
+.status-pill.approved,
+.status-pill.completed,
+.status-pill.ready {
+  background: var(--brand-bright);
+  color: var(--ink);
+}
+
+.status-pill.needs_review,
+.status-pill.scheduled,
+.status-pill.processing,
+.status-pill.detected,
+.status-pill.medium {
+  background: var(--brand-soft);
+  color: var(--brand-deep);
+}
+
+.status-pill.rejected,
+.status-pill.revoked,
+.status-pill.replaced,
+.status-pill.conflict_detected,
+.status-pill.high,
+.status-pill.archived {
+  background: var(--brand-muted);
+  color: var(--surface);
+}
+
+.full-width {
+  width: 100%;
+}
+
+.document-panel pre {
+  background: var(--ink);
+  border-radius: 8px;
+  color: var(--brand-soft);
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  margin: 0;
+  overflow: auto;
+  padding: 16px;
+  white-space: pre-wrap;
+}
+
+.document-sections,
+.document-versions,
+.document-revision,
+.document-actions,
+.document-export-jobs,
+.diff-view,
+.comment-form,
+.comment-list,
+.evidence-list {
+  display: grid;
+  gap: 10px;
+}
+
+.document-actions {
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+}
+
+.document-section {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: grid;
+  gap: 6px;
+  padding: 12px;
+}
+
+.document-section p {
+  color: var(--brand-muted);
+  white-space: pre-wrap;
+}
+
+.evidence-row,
+.export-job-row {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  display: grid;
+  gap: 6px;
+  padding: 10px;
+}
+
+.evidence-row {
+  background: var(--brand-soft);
+}
+
+.evidence-row span,
+.export-job-row small {
+  color: var(--brand-muted);
+  font-size: 12px;
+}
+
+.export-job-row div {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+  justify-content: space-between;
+}
+
+.export-job-row pre {
+  max-height: 220px;
+}
+
+.diff-view {
+  background: var(--ink);
+  border-radius: 8px;
+  color: var(--surface);
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  max-height: 320px;
+  overflow: auto;
+  padding: 12px;
+}
+
+.diff-line {
+  display: block;
+  font-size: 13px;
+  white-space: pre-wrap;
+}
+
+.diff-line.added {
+  color: var(--brand-bright);
+}
+
+.diff-line.removed {
+  color: #ffb4b4;
+}
+
+.comment-row {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  display: grid;
+  gap: 6px;
+  padding: 10px;
+}
+
+.comment-row p,
+.comment-row span {
+  color: var(--brand-muted);
+  font-size: 13px;
+}
+
+.document-versions {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.document-revision textarea {
+  min-height: 160px;
+}
+
+.document-revision button {
+  justify-self: start;
+}
+
+.download-link {
+  justify-self: start;
+  text-decoration: none;
+}
+
+@media (max-width: 1280px) {
+  .operational-grid {
+    grid-template-areas:
+      "access access"
+      "usage plan"
+      "audit audit"
+      "feedback feedback"
+      "global analytics"
+      "notifications notifications";
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .rules-extra-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 900px) {
+  .app-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    border-bottom: 1px solid var(--line);
+    border-right: none;
+  }
+
+  nav {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .two-columns,
+  .meeting-console,
+  .insights-grid,
+  .rules-extra-grid,
+  .operational-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .operational-grid {
+    grid-template-areas:
+      "access"
+      "usage"
+      "plan"
+      "audit"
+      "feedback"
+      "global"
+      "analytics"
+      "notifications";
+  }
+
+  .inline-form {
+    grid-template-columns: 1fr;
+  }
+
+  .access-form,
+  .participant-form,
+  .project-edit-form,
+  .glossary-form,
+  .template-form,
+  .template-meeting-form,
+  .template-use-form,
+  .feedback-form,
+  .detail-metrics {
+    grid-template-columns: 1fr;
+  }
+
+  .meeting-meta-grid {
+    grid-template-columns: 1fr;
+  }
+}

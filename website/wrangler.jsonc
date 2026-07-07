@@ -1,0 +1,12 @@
+{
+  // Deploy do site estático do RuleEs no Cloudflare Workers (Static Assets) — plano free.
+  // Build: `npm run build` (gera ./out) → Deploy: `npx wrangler deploy`.
+  "name": "rulees-site",
+  "compatibility_date": "2025-06-01",
+  "assets": {
+    "directory": "./out",
+    // Para um site estático, serve o HTML correspondente e cai no 404 do próprio site.
+    "not_found_handling": "404-page",
+    "html_handling": "auto-trailing-slash"
+  }
+}

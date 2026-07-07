@@ -1,0 +1,29 @@
+# Rulees
+
+> Rulees é uma plataforma SaaS B2B de inteligência de requisitos com IA (AI Requirements Intelligence Platform). Ele transforma reuniões de negócio em regras claras, decisões, dúvidas, histórias de usuário, critérios de aceite e documentação técnica — tudo rastreável até a fala original da reunião. O diferencial não é resumir reuniões: é governar regras de negócio com aprovação humana (Rules Ledger) e rastreabilidade anti-alucinação.
+
+## O que o Rulees faz
+
+- Captura a reunião por áudio e gera transcrição normalizada (agente Scribe).
+- Extrai regras de negócio candidatas, riscos e dependências com IA (agente Observer).
+- Detecta conflitos e duplicidade com a memória do projeto via RAG (agente RAG Guardian).
+- Gera perguntas inteligentes para fechar lacunas (agente Inquisitor).
+- Mantém o Rules Ledger: cada regra tem estado, versão, fonte e aprovação humana.
+- Gera documentação (resumo executivo, funcional, técnica, backlog, rastreabilidade).
+- Exporta para Jira e Confluence, preservando o vínculo com a evidência original.
+
+## Princípios
+
+- Rastreabilidade total: toda regra aponta para a fala que a originou (anti-alucinação).
+- Controle humano: a IA nunca aprova uma regra sozinha; pessoas decidem.
+- Multi-tenant e seguro: isolamento por organização e conformidade com a LGPD.
+
+## Para quem é
+
+- Software houses e consultorias digitais que precisam transformar conversas com clientes em requisitos rastreáveis.
+- Times de produto em empresas SaaS que querem reduzir retrabalho e ambiguidade.
+
+## Contato
+
+- Site: https://rulees.com.br
+- E-mail: contato@rulees.com.br
