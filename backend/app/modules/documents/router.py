@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, Response
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.core.errors import not_found
+from app.core.errors import feature_disabled, not_found
 from app.core.settings import get_settings
 from app.core.signed_storage import create_signed_storage_token, verify_signed_storage_token, write_private_file
 from app.db.session import get_db
@@ -106,6 +106,8 @@ def generate_document(
     db: Session = Depends(get_db),
 ) -> Document:
     require_permission(context, "document.generate")
+    if not get_settings().document_generation_enabled:
+        raise feature_disabled("Geração de documentos está temporariamente desativada.")
     meeting = _get_meeting(db, context, meeting_id)
     ensure_billing_limit(db, tenant_id=context.tenant_id, event_type="document_generated")
     transcript = list(
@@ -451,6 +453,8 @@ def export_markdown(
     db: Session = Depends(get_db),
 ) -> Response:
     require_permission(context, "document.export")
+    if not get_settings().export_enabled:
+        raise feature_disabled("Exportação está temporariamente desativada.")
     document = _get_document(db, context, document_id)
     ensure_billing_limit(db, tenant_id=context.tenant_id, event_type="markdown_exported")
     markdown = _document_markdown(db, document)
@@ -486,6 +490,8 @@ def export_excel(
     db: Session = Depends(get_db),
 ) -> Response:
     require_permission(context, "document.export")
+    if not get_settings().export_enabled:
+        raise feature_disabled("Exportação está temporariamente desativada.")
     document = _get_document(db, context, document_id)
     ensure_billing_limit(db, tenant_id=context.tenant_id, event_type="excel_exported")
     content = build_document_xlsx(document, _document_sections(db, document))

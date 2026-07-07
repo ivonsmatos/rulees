@@ -271,6 +271,19 @@ def check_rule_conflicts(
     rule_id: str,
     rule_text: str,
 ) -> RagGuardianResult:
+    from app.core.settings import get_settings
+
+    if not get_settings().rag_enabled:
+        return RagGuardianResult(
+            history_verified=False,
+            result_type="disabled",
+            requires_human_resolution=False,
+            summary="RAG Guardian desativado por configuração — conflito não verificado.",
+            retrieved_sources=[],
+            conflicts=[],
+            recommended_status=RuleStatus.needs_review,
+        )
+
     matches = retrieve_similar(
         db,
         tenant_id=tenant_id,

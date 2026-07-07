@@ -23,3 +23,7 @@ def bad_request(detail: str) -> HTTPException:
 
 def payment_required(detail: str = "Plan limit reached") -> HTTPException:
     return HTTPException(status_code=status.HTTP_402_PAYMENT_REQUIRED, detail=detail)
+
+
+def feature_disabled(detail: str = "Feature temporarily disabled") -> HTTPException:
+    return HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=detail)

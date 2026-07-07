@@ -47,7 +47,7 @@ from app.modules.rules_ledger.service import looks_like_rule, normalize_text
 
 logger = logging.getLogger(__name__)
 
-Engine = Literal["heuristic", "llm_openai", "llm_ollama"]
+Engine = Literal["heuristic", "llm_openai", "llm_ollama", "disabled"]
 
 PROMPT_VERSION_HEURISTIC = "local_v1"
 PROMPT_VERSION_LLM = "combined_classifier_v1"
@@ -151,6 +151,19 @@ async def classify_transcript_text(text: str) -> ClassificationResult:
     warning anexado ao resultado.
     """
     settings = get_settings()
+
+    if not settings.ai_enabled:
+        return ClassificationResult(
+            engine="disabled",
+            model_name="none",
+            prompt_version="none",
+            warnings=[
+                ClassificationWarning(
+                    "AI_DISABLED", "Detecção de IA está desativada por configuração.", "low"
+                ).to_dict()
+            ],
+        )
+
     provider = settings.llm_provider
 
     if provider not in ("openai", "ollama"):

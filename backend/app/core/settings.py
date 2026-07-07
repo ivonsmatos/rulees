@@ -51,6 +51,12 @@ class Settings(BaseSettings):
     # P3 — API pública
     public_api_enabled: bool = Field(default=True)
 
+    # Feature flags de rollback (kill switches operacionais — checklist de lançamento §43)
+    ai_enabled: bool = Field(default=True)
+    rag_enabled: bool = Field(default=True)
+    document_generation_enabled: bool = Field(default=True)
+    export_enabled: bool = Field(default=True)
+
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
     @field_validator("environment")
