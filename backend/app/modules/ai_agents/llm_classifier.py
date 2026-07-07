@@ -6,7 +6,7 @@ funções heurísticas já existentes (regex/keyword matching), sem nenhuma
 chamada de rede -- isso mantém o comportamento byte-idêntico ao atual e é o
 que roda nos testes (``tests/conftest.py`` nunca seta ``LLM_PROVIDER``).
 
-Quando ``settings.llm_provider`` é ``"openai"`` ou ``"ollama"``, monta um único
+Quando ``settings.llm_provider`` é ``"openai"``, ``"gemini"`` ou ``"ollama"``, monta um único
 prompt combinado pedindo classificação de regra + pergunta + decisão em uma
 resposta JSON estruturada (evita 3 chamadas separadas e ajuda a meta de
 latência de "regra clara detectada em até 20-30s" do doc de lançamento).
@@ -39,6 +39,7 @@ from dataclasses import dataclass, field
 from typing import Any, Literal
 
 from app.core.settings import Settings, get_settings
+from app.modules.ai_agents.gemini_adapter import get_gemini_client
 from app.modules.ai_agents.ollama_adapter import get_ollama_client
 from app.modules.ai_agents.openai_adapter import get_openai_client
 from app.modules.decisions.service import decision_type_for, should_detect_decision
@@ -47,7 +48,13 @@ from app.modules.rules_ledger.service import looks_like_rule, normalize_text
 
 logger = logging.getLogger(__name__)
 
-Engine = Literal["heuristic", "llm_openai", "llm_ollama", "disabled"]
+Engine = Literal["heuristic", "llm_openai", "llm_gemini", "llm_ollama", "disabled"]
+
+_ENGINE_BY_PROVIDER: dict[str, Engine] = {
+    "openai": "llm_openai",
+    "gemini": "llm_gemini",
+    "ollama": "llm_ollama",
+}
 
 PROMPT_VERSION_HEURISTIC = "local_v1"
 PROMPT_VERSION_LLM = "combined_classifier_v1"
@@ -166,10 +173,10 @@ async def classify_transcript_text(text: str) -> ClassificationResult:
 
     provider = settings.llm_provider
 
-    if provider not in ("openai", "ollama"):
+    if provider not in _ENGINE_BY_PROVIDER:
         return _heuristic_classification(text)
 
-    engine: Engine = "llm_openai" if provider == "openai" else "llm_ollama"
+    engine: Engine = _ENGINE_BY_PROVIDER[provider]
     try:
         return await _run_llm_classification(text, provider=provider, engine=engine, settings=settings)
     except _LLMUnavailable as exc:
@@ -249,11 +256,12 @@ async def _run_llm_classification(
 ) -> ClassificationResult:
     messages = _build_messages(text)
 
-    if provider == "openai":
-        client = get_openai_client()
+    if provider in ("openai", "gemini"):
+        client = get_openai_client() if provider == "openai" else get_gemini_client()
         if client is None:
+            env_var = "OPENAI_API_KEY" if provider == "openai" else "GEMINI_API_KEY"
             raise _LLMUnavailable(
-                "LLM_CLIENT_UNAVAILABLE", "OPENAI_API_KEY nao configurada; usando heuristica."
+                "LLM_CLIENT_UNAVAILABLE", f"{env_var} nao configurada; usando heuristica."
             )
         model_name = client.model
 

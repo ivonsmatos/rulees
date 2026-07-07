@@ -121,6 +121,46 @@ def test_llm_ungrounded_numbers_are_discarded(monkeypatch) -> None:
     assert any(w["code"] == "LLM_UNGROUNDED_RULE_FIELDS" for w in result.warnings)
 
 
+def test_gemini_success_path_uses_openai_compat_client(monkeypatch) -> None:
+    """Gemini reaproveita o OpenAIClient via camada de compatibilidade -- mesmo
+    contrato chat_json, so troca o factory (get_gemini_client em vez de
+    get_openai_client) e a base_url/model."""
+    settings = Settings(llm_provider="gemini", gemini_api_key="test-key", llm_timeout_seconds=5.0)
+    monkeypatch.setattr(llm_classifier, "get_settings", lambda: settings)
+    fake_client = _FakeOpenAIClient(
+        payload={
+            "is_rule_candidate": True,
+            "rule_confidence": 0.85,
+            "rule_condition_text": "cliente tiver investimento acima de R$ 15000",
+            "rule_result_text": "deve receber 1% de cashback",
+            "is_question_candidate": False,
+            "is_decision_candidate": False,
+        },
+        model="gemini-2.5-flash",
+    )
+    monkeypatch.setattr(llm_classifier, "get_gemini_client", lambda: fake_client)
+
+    result = _run(RULE_TEXT)
+
+    assert result.engine == "llm_gemini"
+    assert result.model_name == "gemini-2.5-flash"
+    assert result.is_rule_candidate is True
+    assert result.rule_confidence == 0.85
+    assert result.warnings == []
+
+
+def test_gemini_client_unavailable_falls_back_to_heuristic(monkeypatch) -> None:
+    settings = Settings(llm_provider="gemini", gemini_api_key="", llm_timeout_seconds=5.0)
+    monkeypatch.setattr(llm_classifier, "get_settings", lambda: settings)
+    monkeypatch.setattr(llm_classifier, "get_gemini_client", lambda: None)
+
+    result = _run(RULE_TEXT)
+
+    assert result.engine == "heuristic"
+    assert result.is_rule_candidate is True
+    assert any(w["code"] == "LLM_CLIENT_UNAVAILABLE" for w in result.warnings)
+
+
 def test_llm_client_unavailable_falls_back_to_heuristic(monkeypatch) -> None:
     settings = Settings(llm_provider="openai", openai_api_key="", llm_timeout_seconds=5.0)
     monkeypatch.setattr(llm_classifier, "get_settings", lambda: settings)

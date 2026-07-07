@@ -30,10 +30,13 @@ class Settings(BaseSettings):
     sentry_dsn: str = Field(default="", repr=False)
     opentelemetry_enabled: bool = True
 
-    # P3 — LLM provider (heuristic | openai | ollama)
+    # P3 — LLM provider (heuristic | openai | ollama | gemini)
     llm_provider: str = Field(default="heuristic")
     ollama_base_url: str = Field(default="http://localhost:11434")
     ollama_model: str = Field(default="llama3")
+    gemini_api_key: str = Field(default="", repr=False)
+    gemini_model: str = Field(default="gemini-2.5-flash")
+    gemini_base_url: str = Field(default="https://generativelanguage.googleapis.com/v1beta/openai")
 
     # RAG — provider de embeddings (deterministic | openai | ollama)
     embedding_provider: str = Field(default="deterministic")
@@ -81,7 +84,7 @@ class Settings(BaseSettings):
     @classmethod
     def validate_llm_provider(cls, value: str) -> str:
         normalized = value.lower().strip()
-        allowed = {"heuristic", "openai", "ollama"}
+        allowed = {"heuristic", "openai", "ollama", "gemini"}
         if normalized not in allowed:
             raise ValueError(f"LLM_PROVIDER must be one of: {', '.join(sorted(allowed))}")
         return normalized
