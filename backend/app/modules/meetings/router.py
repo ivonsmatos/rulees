@@ -12,7 +12,13 @@ from app.modules.audit.service import write_audit_log
 from app.modules.billing.service import ensure_billing_limit
 from app.modules.auth.models import TenantMember
 from app.modules.decisions.models import Decision
-from app.modules.meetings.lifecycle import finish_meeting, pause_meeting, resume_meeting, start_meeting
+from app.modules.meetings.lifecycle import (
+    complete_meeting_processing,
+    finish_meeting,
+    pause_meeting,
+    resume_meeting,
+    start_meeting,
+)
 from app.modules.meetings.models import (
     ConsentRecord,
     Meeting,
@@ -623,6 +629,18 @@ def finish(
         from_status=from_status,
         to_status=meeting.status,
     )
+    processing_status = meeting.status
+    meeting, processing_summary = complete_meeting_processing(db, meeting)
+    if meeting.status != processing_status:
+        _write_lifecycle_event(
+            db,
+            meeting=meeting,
+            user_id=context.user_id,
+            event_type="meeting.processing_completed",
+            from_status=processing_status,
+            to_status=meeting.status,
+            details=processing_summary.to_dict(),
+        )
     write_audit_log(
         db,
         tenant_id=context.tenant_id,

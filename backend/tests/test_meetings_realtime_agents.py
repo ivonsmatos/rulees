@@ -140,7 +140,12 @@ def test_meeting_participants_consent_revocation_lifecycle_and_heartbeat() -> No
 
         assert client.post(f"/api/meetings/{meeting_id}/pause", headers=admin_headers).status_code == 200
         assert client.post(f"/api/meetings/{meeting_id}/resume", headers=admin_headers).status_code == 200
-        assert client.post(f"/api/meetings/{meeting_id}/finish", headers=admin_headers).status_code == 200
+        finished = client.post(f"/api/meetings/{meeting_id}/finish", headers=admin_headers)
+        assert finished.status_code == 200
+        # Regressao: a reuniao nao pode ficar presa para sempre em "processing" --
+        # deve transicionar automaticamente para processing_completed (ver
+        # meetings/lifecycle.py::complete_meeting_processing).
+        assert finished.json()["status"] == "processing_completed"
 
         lifecycle = client.get(f"/api/meetings/{meeting_id}/lifecycle-events", headers=admin_headers)
         assert lifecycle.status_code == 200
@@ -154,7 +159,56 @@ def test_meeting_participants_consent_revocation_lifecycle_and_heartbeat() -> No
             "meeting.paused",
             "meeting.resumed",
             "meeting.finished",
+            "meeting.processing_completed",
         }.issubset(event_types)
+
+
+def test_meeting_stop_event_transitions_to_processing_completed() -> None:
+    """Regressao: o evento WS `meeting.stop` tambem nao pode deixar a reuniao
+    presa para sempre em `processing` (ver realtime/websocket.py, handler de
+    `meeting.stop`, que agora chama meetings.lifecycle.complete_meeting_processing)."""
+    with TestClient(app) as client:
+        admin, admin_headers = _register(client, "Stop Admin", "Tenant Stop")
+
+        project = client.post(
+            "/api/projects",
+            headers=admin_headers,
+            json={"name": "Projeto Stop", "description": ""},
+        )
+        assert project.status_code == 200
+        project_id = project.json()["id"]
+
+        meeting = client.post(
+            f"/api/projects/{project_id}/meetings",
+            headers=admin_headers,
+            json={"title": "Reuniao Stop via WS", "objective": "Validar meeting.stop"},
+        )
+        assert meeting.status_code == 200
+        meeting_id = meeting.json()["id"]
+
+        assert client.post(
+            f"/api/meetings/{meeting_id}/consent",
+            headers=admin_headers,
+            json={"text_version": "v1", "accepted_scope": {"audio": True}},
+        ).status_code == 200
+        assert client.post(f"/api/meetings/{meeting_id}/start", headers=admin_headers).status_code == 200
+
+        with client.websocket_connect(f"/ws/meetings/{meeting_id}?token={admin['access_token']}") as ws:
+            assert ws.receive_json()["event_type"] == "client.connected"
+            ws.send_json({"event_id": "stop-1", "event_type": "meeting.stop", "payload": {}})
+            processing = ws.receive_json()
+            assert processing["event_type"] == "meeting.processing"
+            assert processing["payload"]["status"] == "processing"
+            completed = ws.receive_json()
+            assert completed["event_type"] == "meeting.processing_completed"
+            assert completed["payload"]["status"] == "processing_completed"
+            assert completed["payload"]["rules_count"] == 0
+            assert completed["payload"]["questions_count"] == 0
+            assert completed["payload"]["decisions_count"] == 0
+
+        state = client.get(f"/api/meetings/{meeting_id}/state", headers=admin_headers)
+        assert state.status_code == 200
+        assert state.json()["meeting"]["status"] == "processing_completed"
 
 
 def test_document_generation_writes_extended_agent_runs() -> None:
