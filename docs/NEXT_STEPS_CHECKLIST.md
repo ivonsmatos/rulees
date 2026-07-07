@@ -39,15 +39,17 @@ beta. É protótipo."* Hoje o projeto é um protótipo avançado e bem estrutura
 A promessa do produto ("detectar regras em reuniões reais") não se sustenta com
 heurísticas de palavra-chave sobre fala espontânea.
 
-- [ ] Plugar LLM real nos nós do pipeline LangGraph (Scribe, Observer, Rule
-      Quality, Inquisitor, Decision), mantendo o envelope schema 1.0 e
-      `source_references` obrigatórios. Usar o contrato da skill `rulees-ai-agents`.
-- [ ] Criar adapter LLM para provider cloud (OpenAI e/ou Anthropic) além do
-      Ollama; ligar `LLM_PROVIDER` de fato à orquestração.
-- [ ] Prompts versionados (`prompt_version` registrado em cada `agent_run`),
+- [x] Plugar LLM real nos nós do pipeline ao vivo (Observer/Inquisitor/Decision
+      combinados em `classify_transcript_text`), mantendo o envelope schema 1.0,
+      `source_references` obrigatórios e fallback heurístico automático em caso
+      de falha/timeout. Ver `backend/app/modules/ai_agents/llm_classifier.py`.
+- [x] Criar adapter LLM para provider cloud (OpenAI) além do Ollama; `LLM_PROVIDER`
+      liga de fato à classificação ao vivo. Anthropic ainda não tem adapter dedicado.
+- [x] Prompts versionados (`prompt_version` registrado em cada `agent_run`),
       exigido pelo checklist de schemas de IA (doc §15).
-- [ ] Fallback: falha do LLM cai para heurística e marca warning no run —
-      "falha de IA não derruba reunião" (doc §42).
+- [x] Fallback: falha do LLM cai para heurística e marca warning no run —
+      "falha de IA não derruba reunião" (doc §42). Inclui checagem anti-alucinação
+      que descarta campos extraídos pelo LLM não fundamentados na transcrição real.
 - [ ] Validar STT Deepgram com áudio real pt-BR: latência de partial/final,
       diarização, custo por minuto. Configurar `DEEPGRAM_API_KEY` em ambiente real.
 - [ ] Testar o fluxo reunião real de 15–30 min de ponta a ponta com STT + LLM
@@ -55,12 +57,25 @@ heurísticas de palavra-chave sobre fala espontânea.
 
 ## Fase 2 — Robustez do produto
 
-- [ ] Substituir o PDF artesanal por biblioteca real (reportlab/weasyprint):
+- [~] Substituir o PDF artesanal por biblioteca real (reportlab):
       título, data, projeto, status, regras com IDs, seções, branding Rulees
-      (doc §22).
-- [ ] Worker assíncrono (Arq + Redis) para: pipeline de IA pós-reunião, geração
-      de documento, exportação PDF, embeddings — tirar processamento pesado da
-      request/WS (doc §41: "workers processam jobs sem acumular fila").
+      (doc §22). Em execução.
+- [x] ~~Worker assíncrono (Arq + Redis)~~ — **avaliado e adiado deliberadamente**
+      pelo arquiteto (Plan agent, 2026-07-07). Nenhum job atual é pesado o
+      suficiente para justificar fila: PDF/Excel são só manipulação de
+      string/bytes em memória (sub-segundo); export jira/confluence hoje só
+      monta um payload JSON local, sem chamada HTTP externa real. Introduzir
+      Arq agora é infraestrutura nova (processo extra, retry/dead-letter, CI
+      sem Redis hoje) para zero ganho medido. **Gatilho objetivo de
+      reavaliação:** (a) quando o pós-processamento de reunião (reconciliação
+      de regras, geração de documento, backfill de embeddings) passar de
+      segundos para minutos em teste real; ou (b) quando `create_export_job`
+      (jira/confluence) passar a fazer chamada HTTP real para API externa —
+      aí sim retry/fila viram a ferramenta certa.
+- [~] Feature flags para desligar IA, RAG, geração de documento e exportação
+      (exigência de rollback, doc §43). Em execução (`ai_enabled`,
+      `rag_enabled`, `document_generation_enabled`, `export_enabled` já em
+      `backend/app/core/settings.py`).
 - [ ] Refatorar frontend: quebrar `App.tsx` em `features/` por domínio com
       router; manter identidade visual (skill `rulees-frontend`).
 - [ ] PWA mínimo: manifest, service worker, ícones — a arquitetura de frontend
@@ -70,8 +85,23 @@ heurísticas de palavra-chave sobre fala espontânea.
 - [ ] Billing: fluxo de upgrade/downgrade simples (mesmo que manual/por contato
       no beta) + registro de custo real por provider (STT min, LLM tokens,
       embeddings) nos `usage_events` (doc §27).
-- [ ] Feature flags para desligar IA, RAG, geração de documento e exportação
-      (exigência de rollback, doc §43).
+
+## Achados de revisão de arquitetura (2026-07-07, não previstos no levantamento inicial)
+
+- [~] Chamada síncrona bloqueante no event loop do WebSocket: `check_rule_conflicts`/
+      `upsert_embedding` em `realtime/websocket.py` fazem HTTP síncrono via
+      `embed_with_fallback` quando `embedding_provider` é openai/ollama, travando
+      conexões concorrentes. Corrigir com `asyncio.to_thread` (mesmo padrão do
+      `llm_classifier.py`). Em execução.
+- [~] Handler do WebSocket só captura `WebSocketDisconnect` — qualquer outra
+      exceção derruba a conexão sem emitir `error.validation`, violando o
+      contrato da skill `rulees-realtime-events`. Em execução.
+- [~] Reunião fica presa para sempre em `MeetingStatus.processing` — nunca
+      transiciona para `processing_completed`/`finished` após `meeting.stop`
+      nem após `finish_meeting`. Em execução.
+- [ ] `signed_export_url` (`documents/router.py`) gera PDF/Excel sem checar
+      `export_enabled` — kill switch furado por essa rota. Em execução junto
+      com os gates de feature flag.
 
 ## Fase 3 — Operação e infraestrutura
 
