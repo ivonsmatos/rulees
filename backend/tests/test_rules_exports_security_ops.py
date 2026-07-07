@@ -3,7 +3,9 @@ from uuid import uuid4
 from fastapi.testclient import TestClient
 
 from app.main import app
+from app.core.settings import get_settings
 from app.modules.audit.service import sanitize_audit_details
+from app.modules.documents import router as documents_router
 
 
 def _register(client: TestClient) -> tuple[dict, dict[str, str]]:
@@ -191,3 +193,50 @@ def test_p1_templates_gaps_summary_and_beta_feedback() -> None:
         feedback_list = client.get("/api/feedback/beta", headers=headers)
         assert feedback_list.status_code == 200
         assert feedback_list.json()[0]["comment"] == "Fluxo claro"
+
+
+def _document_for_export(client: TestClient, auth: dict, headers: dict[str, str]) -> str:
+    meeting_id, _rule = _meeting_with_rule(client, auth, headers)
+    document = client.post(f"/api/meetings/{meeting_id}/documents/generate", headers=headers)
+    assert document.status_code == 200
+    return document.json()["id"]
+
+
+def test_export_pdf_returns_503_when_export_disabled(monkeypatch) -> None:
+    with TestClient(app) as client:
+        auth, headers = _register(client)
+        document_id = _document_for_export(client, auth, headers)
+
+        disabled_settings = get_settings().model_copy(update={"export_enabled": False})
+        monkeypatch.setattr(documents_router, "get_settings", lambda: disabled_settings)
+
+        response = client.get(f"/api/documents/{document_id}/export/pdf", headers=headers)
+        assert response.status_code == 503
+
+
+def test_create_export_job_returns_503_when_export_disabled(monkeypatch) -> None:
+    with TestClient(app) as client:
+        auth, headers = _register(client)
+        document_id = _document_for_export(client, auth, headers)
+
+        disabled_settings = get_settings().model_copy(update={"export_enabled": False})
+        monkeypatch.setattr(documents_router, "get_settings", lambda: disabled_settings)
+
+        response = client.post(
+            f"/api/documents/{document_id}/export-jobs",
+            headers=headers,
+            json={"format": "markdown"},
+        )
+        assert response.status_code == 503
+
+
+def test_signed_export_url_returns_503_when_export_disabled(monkeypatch) -> None:
+    with TestClient(app) as client:
+        auth, headers = _register(client)
+        document_id = _document_for_export(client, auth, headers)
+
+        disabled_settings = get_settings().model_copy(update={"export_enabled": False})
+        monkeypatch.setattr(documents_router, "get_settings", lambda: disabled_settings)
+
+        response = client.get(f"/api/documents/{document_id}/export/pdf/signed-url", headers=headers)
+        assert response.status_code == 503

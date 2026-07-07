@@ -528,6 +528,8 @@ def signed_export_url(
     db: Session = Depends(get_db),
 ) -> SignedExportUrlResponse:
     require_permission(context, "document.export")
+    if not get_settings().export_enabled:
+        raise feature_disabled("Exportação está temporariamente desativada.")
     document = _get_document(db, context, document_id)
     if format == "pdf":
         content = build_simple_pdf(document.title, document.content)
@@ -638,6 +640,8 @@ def create_export_job(
     db: Session = Depends(get_db),
 ) -> DocumentExportJob:
     require_permission(context, "document.export")
+    if not get_settings().export_enabled:
+        raise feature_disabled("Exportação está temporariamente desativada.")
     document = _get_document(db, context, document_id)
     event_type = f"{payload.format}_exported" if payload.format in {"pdf", "markdown", "excel"} else "export_job_created"
     ensure_billing_limit(db, tenant_id=context.tenant_id, event_type=event_type)
@@ -695,6 +699,8 @@ def export_pdf(
     db: Session = Depends(get_db),
 ) -> Response:
     require_permission(context, "document.export")
+    if not get_settings().export_enabled:
+        raise feature_disabled("Exportação está temporariamente desativada.")
     document = _get_document(db, context, document_id)
     ensure_billing_limit(db, tenant_id=context.tenant_id, event_type="pdf_exported")
     write_audit_log(
