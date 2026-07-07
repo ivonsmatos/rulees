@@ -59,6 +59,12 @@ _ENGINE_BY_PROVIDER: dict[str, Engine] = {
 PROMPT_VERSION_HEURISTIC = "local_v1"
 PROMPT_VERSION_LLM = "combined_classifier_v1"
 
+# Modelos "thinking" (ex.: gemini-2.5-flash) consomem parte do orcamento de tokens
+# em raciocinio interno antes da resposta visivel -- um limite baixo (ex.: 600)
+# trunca o JSON de saida antes de fechar. 2048 da margem para o raciocinio e para
+# o JSON completo do classificador combinado, testado contra a API real.
+_MAX_COMPLETION_TOKENS = 2048
+
 _ALLOWED_GAP_TYPES = {"ambiguous_term", "missing_result", "open_question"}
 _ALLOWED_PRIORITIES = {"high", "medium", "low"}
 _ALLOWED_DECISION_TYPES = {"approval", "deadline_definition", "owner_definition", "business_decision"}
@@ -266,14 +272,14 @@ async def _run_llm_classification(
         model_name = client.model
 
         def call() -> dict[str, Any] | None:
-            return client.chat_json(messages, temperature=0.1, max_tokens=600)
+            return client.chat_json(messages, temperature=0.1, max_tokens=_MAX_COMPLETION_TOKENS)
 
     else:
         client = get_ollama_client()
         model_name = client.model
 
         def call() -> dict[str, Any] | None:
-            raw = client.chat(messages, temperature=0.1, max_tokens=600)
+            raw = client.chat(messages, temperature=0.1, max_tokens=_MAX_COMPLETION_TOKENS)
             return _extract_json(raw)
 
     try:
