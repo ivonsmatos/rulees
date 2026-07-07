@@ -1,9 +1,33 @@
+import json
+
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.core.errors import payment_required
 from app.modules.billing.models import TenantBillingProfile
 from app.modules.usage.models import UsageEvent
+
+# Custo aproximado por 1M tokens (USD), por modelo de LLM -- tabelas publicas dos
+# provedores, sujeitas a mudanca. Usado so para estimativa exibida ao tenant, nunca
+# para cobranca real; ajustar os valores aqui se o preco do provider mudar.
+LLM_TOKEN_COST_USD_PER_MILLION: dict[str, dict[str, float]] = {
+    "gpt-4o-mini": {"input": 0.15, "output": 0.60},
+    "gemini-2.5-flash": {"input": 0.30, "output": 2.50},
+}
+
+
+def estimate_llm_cost_usd(model_name: str, *, prompt_tokens: int, total_tokens: int) -> float | None:
+    """Custo estimado usando `total_tokens - prompt_tokens` como base de saida (em
+    vez de `completion_tokens`): modelos "thinking" (ex.: gemini-2.5-flash) gastam
+    tokens de raciocinio interno que nao aparecem em `completion_tokens`, mas sao
+    cobrados como saida pelo provider -- `total_tokens` e a contagem que reflete
+    isso corretamente. Para modelos sem raciocinio oculto, completion == total-prompt
+    de qualquer forma, entao a formula continua correta."""
+    rates = LLM_TOKEN_COST_USD_PER_MILLION.get(model_name)
+    if rates is None:
+        return None
+    output_tokens = max(total_tokens - prompt_tokens, 0)
+    return (prompt_tokens * rates["input"] + output_tokens * rates["output"]) / 1_000_000
 
 PLAN_LIMITS: dict[str, dict[str, float]] = {
     "trial": {
@@ -99,6 +123,27 @@ def ensure_billing_limit(
         raise payment_required(f"Limite do plano atingido para {event_type}")
 
 
+def real_llm_cost_usd(db: Session, *, tenant_id: str) -> float:
+    """Soma o custo real (nao estimativa fixa) registrado em usage_events do tipo
+    `llm_tokens_used`, calculado a partir de tokens reais de cada chamada de LLM."""
+    events = db.scalars(
+        select(UsageEvent).where(
+            UsageEvent.tenant_id == tenant_id,
+            UsageEvent.event_type == "llm_tokens_used",
+        )
+    )
+    total = 0.0
+    for event in events:
+        try:
+            details = json.loads(event.details)
+        except (json.JSONDecodeError, TypeError):
+            continue
+        cost = details.get("estimated_cost_usd")
+        if isinstance(cost, (int, float)):
+            total += cost
+    return total
+
+
 def billing_status(db: Session, *, tenant_id: str) -> dict:
     profile = get_or_create_billing_profile(db, tenant_id=tenant_id)
     limits = PLAN_LIMITS.get(profile.plan_name, PLAN_LIMITS["trial"])
@@ -127,4 +172,5 @@ def billing_status(db: Session, *, tenant_id: str) -> dict:
             for event_type in event_types
             if usage_total(db, tenant_id=tenant_id, event_type=event_type) > 0
         ],
+        "real_llm_cost_usd": real_llm_cost_usd(db, tenant_id=tenant_id),
     }

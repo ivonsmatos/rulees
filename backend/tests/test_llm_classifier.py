@@ -20,11 +20,12 @@ DECISION_TEXT = "Fica aprovado que a primeira versão será lançada para client
 
 
 class _FakeOpenAIClient:
-    def __init__(self, payload=None, exc=None, delay=0.0, model="fake-gpt"):
+    def __init__(self, payload=None, exc=None, delay=0.0, model="fake-gpt", usage=None):
         self.payload = payload
         self.exc = exc
         self.delay = delay
         self.model = model
+        self.usage = usage
 
     def chat_json(self, messages, temperature=0.1, max_tokens=600):
         if self.delay:
@@ -32,6 +33,13 @@ class _FakeOpenAIClient:
         if self.exc:
             raise self.exc
         return self.payload
+
+    def chat_json_with_usage(self, messages, temperature=0.1, max_tokens=600):
+        if self.delay:
+            time.sleep(self.delay)
+        if self.exc:
+            raise self.exc
+        return self.payload, self.usage
 
 
 class _FakeOllamaClient:
@@ -96,6 +104,36 @@ def test_llm_success_path_parses_grounded_fields(monkeypatch) -> None:
     assert result.rule_condition_text == "cliente tiver investimento acima de R$ 15000"
     assert result.rule_result_text == "deve receber 1% de cashback"
     assert result.warnings == []
+
+
+def test_llm_success_path_captures_real_token_usage(monkeypatch) -> None:
+    """Custo real por chamada depende de capturar prompt/completion tokens reais
+    da resposta do provider (nao uma estimativa fixa por tipo de evento)."""
+    settings = Settings(llm_provider="openai", openai_api_key="test-key", llm_timeout_seconds=5.0)
+    monkeypatch.setattr(llm_classifier, "get_settings", lambda: settings)
+    fake_client = _FakeOpenAIClient(
+        payload={"is_rule_candidate": False, "is_question_candidate": False, "is_decision_candidate": False},
+        usage={"prompt_tokens": 120, "completion_tokens": 40, "total_tokens": 160},
+    )
+    monkeypatch.setattr(llm_classifier, "get_openai_client", lambda: fake_client)
+
+    result = _run(RULE_TEXT)
+
+    assert result.usage == {"prompt_tokens": 120, "completion_tokens": 40, "total_tokens": 160}
+
+
+def test_ollama_success_path_has_no_token_usage(monkeypatch) -> None:
+    settings = Settings(llm_provider="ollama", llm_timeout_seconds=5.0)
+    monkeypatch.setattr(llm_classifier, "get_settings", lambda: settings)
+    monkeypatch.setattr(
+        llm_classifier,
+        "get_ollama_client",
+        lambda: _FakeOllamaClient(raw='{"is_rule_candidate": false}'),
+    )
+
+    result = _run(RULE_TEXT)
+
+    assert result.usage is None
 
 
 def test_llm_ungrounded_numbers_are_discarded(monkeypatch) -> None:

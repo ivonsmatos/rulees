@@ -32,14 +32,15 @@ class OpenAIClient:
         self.base_url = base_url.rstrip("/")
         self._timeout = httpx.Timeout(timeout_seconds)
 
-    def chat(
+    def _post_chat_completion(
         self,
         messages: list[dict[str, str]],
-        temperature: float = 0.1,
-        max_tokens: int = 1024,
-        json_mode: bool = True,
-    ) -> str:
-        """Chamada síncrona a /chat/completions. Retorna o texto da resposta."""
+        temperature: float,
+        max_tokens: int,
+        json_mode: bool,
+    ) -> dict[str, Any]:
+        """Chamada síncrona a /chat/completions. Retorna o corpo completo da resposta
+        (inclui ``usage`` com contagem real de tokens, quando o provider expõe)."""
         body: dict[str, Any] = {
             "model": self.model,
             "messages": messages,
@@ -55,17 +56,21 @@ class OpenAIClient:
             timeout=self._timeout,
         )
         resp.raise_for_status()
-        data = resp.json()
-        return data["choices"][0]["message"]["content"]
+        return resp.json()
 
-    def chat_json(
+    def chat(
         self,
         messages: list[dict[str, str]],
         temperature: float = 0.1,
         max_tokens: int = 1024,
-    ) -> dict[str, Any] | None:
-        """Chama o modelo e faz parse do JSON retornado. None em caso de falha."""
-        raw = self.chat(messages, temperature=temperature, max_tokens=max_tokens, json_mode=True)
+        json_mode: bool = True,
+    ) -> str:
+        """Chamada síncrona a /chat/completions. Retorna o texto da resposta."""
+        data = self._post_chat_completion(messages, temperature, max_tokens, json_mode)
+        return data["choices"][0]["message"]["content"]
+
+    @staticmethod
+    def _parse_json_payload(raw: str) -> dict[str, Any] | None:
         try:
             return json.loads(raw)
         except json.JSONDecodeError:
@@ -77,6 +82,36 @@ class OpenAIClient:
                 return json.loads(raw[start:end])
             except json.JSONDecodeError:
                 return None
+
+    def chat_json(
+        self,
+        messages: list[dict[str, str]],
+        temperature: float = 0.1,
+        max_tokens: int = 1024,
+    ) -> dict[str, Any] | None:
+        """Chama o modelo e faz parse do JSON retornado. None em caso de falha."""
+        raw = self.chat(messages, temperature=temperature, max_tokens=max_tokens, json_mode=True)
+        return self._parse_json_payload(raw)
+
+    def chat_json_with_usage(
+        self,
+        messages: list[dict[str, str]],
+        temperature: float = 0.1,
+        max_tokens: int = 1024,
+    ) -> tuple[dict[str, Any] | None, dict[str, int] | None]:
+        """Como `chat_json`, mas também retorna a contagem real de tokens (``usage``),
+        quando o provider a expõe -- usado para estimar custo real por chamada."""
+        data = self._post_chat_completion(messages, temperature, max_tokens, json_mode=True)
+        content = data["choices"][0]["message"]["content"]
+        usage_raw = data.get("usage") or {}
+        usage: dict[str, int] | None = None
+        if usage_raw:
+            usage = {
+                "prompt_tokens": int(usage_raw.get("prompt_tokens", 0)),
+                "completion_tokens": int(usage_raw.get("completion_tokens", 0)),
+                "total_tokens": int(usage_raw.get("total_tokens", 0)),
+            }
+        return self._parse_json_payload(content), usage
 
     def health(self) -> bool:
         try:

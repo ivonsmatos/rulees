@@ -113,6 +113,10 @@ class ClassificationResult:
 
     warnings: list[dict[str, Any]] = field(default_factory=list)
 
+    # Contagem real de tokens da chamada ao LLM (None para heuristica/disabled/ollama
+    # -- Ollama nao expoe usage nesse formato hoje). Usado para custo real, nao estimado.
+    usage: dict[str, int] | None = None
+
 
 class _LLMUnavailable(Exception):
     """Sinaliza que o LLM não pôde ser usado; sempre resolvida com fallback heurístico."""
@@ -271,19 +275,19 @@ async def _run_llm_classification(
             )
         model_name = client.model
 
-        def call() -> dict[str, Any] | None:
-            return client.chat_json(messages, temperature=0.1, max_tokens=_MAX_COMPLETION_TOKENS)
+        def call() -> tuple[dict[str, Any] | None, dict[str, int] | None]:
+            return client.chat_json_with_usage(messages, temperature=0.1, max_tokens=_MAX_COMPLETION_TOKENS)
 
     else:
         client = get_ollama_client()
         model_name = client.model
 
-        def call() -> dict[str, Any] | None:
+        def call() -> tuple[dict[str, Any] | None, dict[str, int] | None]:
             raw = client.chat(messages, temperature=0.1, max_tokens=_MAX_COMPLETION_TOKENS)
-            return _extract_json(raw)
+            return _extract_json(raw), None
 
     try:
-        payload = await asyncio.wait_for(
+        payload, usage = await asyncio.wait_for(
             asyncio.to_thread(call), timeout=settings.llm_timeout_seconds
         )
     except TimeoutError as exc:
@@ -299,6 +303,7 @@ async def _run_llm_classification(
         raise _LLMUnavailable("LLM_EMPTY_RESPONSE", f"Resposta vazia ou nao-JSON do {provider}.")
 
     result, warnings = _parse_llm_payload(payload, original_text=text, engine=engine, model_name=model_name)
+    result.usage = usage
     result.warnings = [w.to_dict() for w in warnings]
     return result
 

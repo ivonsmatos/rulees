@@ -21,3 +21,4 @@ class BillingStatusResponse(BaseModel):
     status: str
     limits: list[BillingLimitItem]
     estimated_costs: list[BillingCostItem] = []
+    real_llm_cost_usd: float = 0.0

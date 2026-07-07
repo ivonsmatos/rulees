@@ -13,7 +13,7 @@ from app.db.session import SessionLocal
 from app.modules.ai_agents.llm_classifier import classify_transcript_text
 from app.modules.ai_agents.service import write_agent_run
 from app.modules.auth.models import TenantMember
-from app.modules.billing.service import ensure_billing_limit
+from app.modules.billing.service import ensure_billing_limit, estimate_llm_cost_usd
 from app.modules.decisions.service import create_detected_decision
 from app.modules.meetings.lifecycle import complete_meeting_processing
 from app.modules.meetings.models import Meeting, TranscriptChunk
@@ -375,6 +375,30 @@ async def meeting_socket(websocket: WebSocket, meeting_id: str, token: str) -> N
                             continue
 
                         classification = await classify_transcript_text(normalized)
+
+                        if classification.usage:
+                            estimated_cost = estimate_llm_cost_usd(
+                                classification.model_name,
+                                prompt_tokens=classification.usage["prompt_tokens"],
+                                total_tokens=classification.usage["total_tokens"],
+                            )
+                            write_usage_event(
+                                db,
+                                tenant_id=meeting.tenant_id,
+                                project_id=meeting.project_id,
+                                meeting_id=meeting.id,
+                                user_id=user_id,
+                                event_type="llm_tokens_used",
+                                unit="tokens",
+                                quantity=classification.usage["total_tokens"],
+                                details={
+                                    "model": classification.model_name,
+                                    "engine": classification.engine,
+                                    "prompt_tokens": classification.usage["prompt_tokens"],
+                                    "completion_tokens": classification.usage["completion_tokens"],
+                                    "estimated_cost_usd": estimated_cost,
+                                },
+                            )
 
                         if classification.is_rule_candidate:
                             rule = create_candidate_rule(
